@@ -27,7 +27,8 @@ import com.shrinivas.documentindexer.repository.IndexRepository;
 @Component
 public class DocumentIndexer {
 
-	private static final Logger LOGGER = LogManager.getLogger(DocumentIndexer.class);
+	private static final Logger LOGGER = LogManager
+			.getLogger(DocumentIndexer.class);
 
 	@Autowired
 	private IndexRepository indexRepository;
@@ -38,7 +39,8 @@ public class DocumentIndexer {
 	public void process() throws IOException {
 		List<File> indexableFiles = getSourceFiles();
 		LOGGER.info("Found " + indexableFiles.size() + " indexable files.");
-		Map<String, Set<String>> index = convertIndexToMap(indexRepository.findAll());
+		Map<String, Set<String>> index = convertIndexToMap(indexRepository
+				.findAll());
 		index = startIndexing(indexableFiles, index);
 		LOGGER.info("Indexed " + index.size() + " words");
 		List<Index> indices = convertMapToDocument(index);
@@ -63,8 +65,8 @@ public class DocumentIndexer {
 		return indices;
 	}
 
-	private Map<String, Set<String>> startIndexing(List<File> indexableFiles, Map<String, Set<String>> index)
-			throws IOException {
+	private Map<String, Set<String>> startIndexing(List<File> indexableFiles,
+			Map<String, Set<String>> index) throws IOException {
 		for (File file : indexableFiles) {
 			String filePath = file.getAbsolutePath();
 			try {
@@ -74,10 +76,13 @@ public class DocumentIndexer {
 				while ((str = br.readLine()) != null) {
 					String[] words = str.split(" ");
 					for (String word : words) {
-						if (!index.containsKey(word)) {
-							index.put(word, new TreeSet<>());
+						if (word.length() < 1024) {
+							word = word.toLowerCase();
+							if (!index.containsKey(word)) {
+								index.put(word, new TreeSet<>());
+							}
+							index.get(word).add(filePath);
 						}
-						index.get(word).add(filePath);
 					}
 				}
 			} catch (FileNotFoundException ex) {
@@ -99,7 +104,8 @@ public class DocumentIndexer {
 		return getIndexableFiles(sourceFilePath, indexableFiles);
 	}
 
-	private List<File> getIndexableFiles(List<File> sourceFilePath, List<File> indexableFiles) {
+	private List<File> getIndexableFiles(List<File> sourceFilePath,
+			List<File> indexableFiles) {
 		for (File file : sourceFilePath) {
 			if (file.isFile()) {
 				indexableFiles.add(file);
@@ -109,7 +115,8 @@ public class DocumentIndexer {
 					public boolean accept(File dir, String name) {
 						File file = new File(dir, name);
 						if (file.isFile()) {
-							String extension = FilenameUtils.getExtension(file.getAbsolutePath());
+							String extension = FilenameUtils.getExtension(file
+									.getAbsolutePath());
 							return extension.equalsIgnoreCase("txt");
 						}
 						return true;
